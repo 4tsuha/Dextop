@@ -21,6 +21,7 @@ google-services.json
 .pub-cache/
 .pub/
 build/
+release/
 coverage/
 doc/api/
 *.symbols
