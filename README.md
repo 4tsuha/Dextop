@@ -5,54 +5,54 @@
 <h1 align="center">Dextop</h1>
 
 <p align="center">
-  <a href="README.md">日本語</a> | <a href="README.en.md">English</a>
+  <a href="README.md">English</a> | <a href="README.ja.md">日本語</a>
 </p>
 
-Dextopは、Android端末上に仮想ディスプレイを作成し、スマートフォンだけでデスクトップ風の作業環境を利用するためのオープンソースアプリです。ShizukuとAndroidのシステム機能を利用して、アプリの起動、ウィンドウ配置、タッチ操作、画面方向などを制御します。
+Dextop is an open-source Android app that creates a virtual display and provides a desktop-like workspace using only a smartphone. It uses Shizuku and Android system services to control app launching, window placement, touch input, orientation, and related desktop behavior.
 
-## 機能
+## Features
 
-- [x] 解像度、DPI、縦向き／横向きを指定した仮想ディスプレイ
-- [x] セキュア表示とAndroidシステム装飾の切り替え
-- [x] デスクトップ上でのアプリランチャー
-- [x] 複数アプリの位置を保存・再現するワークスペース
-- [x] 2分割、3分割、4分割などのウィンドウレイアウト
-- [x] ワークスペースのJSONインポート／エクスポート
-- [x] カーソルモードと直接タッチモード
-- [x] タップ、長押し、ドラッグ、右クリック、2本指／3本指ジェスチャー
-- [x] 折りたたみ端末の開閉状態に応じた解像度の自動切り替え
-- [x] FPS、リフレッシュレート、メモリ、バッテリー、推定消費電力のパフォーマンス表示
-- [x] クイック設定タイルからの起動
-- [x] 中断されたセッションとAndroid設定の復元
-- [x] アプリログ、能力判定、端末仕様を含む詳細な診断レポート
-- [x] 日本語、英語、中国語、韓国語、ロシア語UI
-- [ ] 物理マウスの完全対応（現在は移動、基本クリック、スクロールなどに限定）
-- [ ] 物理キーボードの完全対応（ショートカット、IME、外部画面への入力経路は端末依存）
+- [x] Virtual displays with configurable resolution, density, and portrait or landscape orientation
+- [x] Secure-display and Android system-decoration controls
+- [x] Desktop app launcher
+- [x] Workspaces that save and restore the placement of multiple apps
+- [x] Two-pane, three-pane, four-pane, and other window layouts
+- [x] Workspace import and export as JSON
+- [x] Cursor and direct-touch input modes
+- [x] Tap, long-press, drag, right-click, two-finger, and three-finger gestures
+- [x] Automatic resolution switching for foldable open and closed states
+- [x] Performance overlay for FPS, refresh rate, memory, battery, and estimated power usage
+- [x] Quick Settings tile launch
+- [x] Interrupted-session recovery and restoration of temporary Android settings
+- [x] Detailed diagnostic reports containing app logs, capability probes, fallback results, and device specifications
+- [x] Japanese, English, Chinese, Korean, and Russian interfaces
+- [ ] Complete physical-mouse support (currently limited to movement, basic clicks, scrolling, and related input)
+- [ ] Complete physical-keyboard support (shortcuts, IMEs, and external-display input routing remain device-dependent)
 
-## 対応状況
+## Compatibility
 
-| 環境 | 対応状況 | 備考 |
+| Environment | Status | Notes |
 | --- | --- | --- |
-| Samsung DeX | ほぼ対応 | 現在もっとも完全な動作環境です。DeX側で管理される機能はSamsungの実装を利用します。 |
-| Google Pixel | 限定的・不完全 | Androidのfreeform／desktop実装と非公開APIの状態に依存し、一部機能が動作しない場合があります。 |
-| その他のAndroid端末 | 実験的 | メーカー、機種、OS更新によって仮想ディスプレイ、ミラーリング、freeformの対応状況が異なります。 |
+| Samsung DeX | Mostly supported | Currently the most complete environment. Features managed by DeX use Samsung's platform implementation. |
+| Google Pixel | Limited and incomplete | Depends on Android's freeform/desktop implementation and hidden API availability. Some features may not work. |
+| Other Android devices | Experimental | Virtual-display, mirroring, and freeform support varies by manufacturer, model, and OS update. |
 
-Dextopは実行時に端末の能力を検査し、複数のバックエンドを順番に試します。ただし、Androidの非公開APIやOEM実装を利用するため、同じメーカーでも機種やOSバージョンによって結果が異なります。
+Dextop probes device capabilities at runtime and tries compatible backends in order. It still depends on Android hidden APIs and OEM behavior, so results can differ between models and OS versions from the same manufacturer.
 
-## 動作要件
+## System requirements
 
-- Android 10以降
+- Android 10 or later
 - [Shizuku](https://shizuku.rikka.app/)
-- ワイヤレスデバッグまたはADBによるShizukuの起動
-- DextopへのShizuku権限
+- Shizuku started through wireless debugging or ADB
+- Shizuku permission granted to Dextop
 
-## インストール
+## Installation
 
-Google Play版は現在審査中です。
+The Google Play release is currently under review.
 
-[GitHub Releases](https://github.com/NarYuki/Dextop/releases/latest)から最新のAPKをダウンロードし、インストールしてください。
+Download the latest APK from [GitHub Releases](https://github.com/NarYuki/Dextop/releases/latest) and install it.
 
-## 開発
+## Development
 
 ```sh
 git clone https://github.com/NarYuki/Dextop.git
@@ -63,14 +63,14 @@ flutter test
 flutter build apk --debug
 ```
 
-新しい端末への対応を追加する場合は、[端末対応の追加ガイド](docs/ADDING_DEVICE_SUPPORT.md)を参照してください。英語版は[こちら](docs/ADDING_DEVICE_SUPPORT.en.md)です。
+To contribute support for another device, read [Adding support for a device](docs/ADDING_DEVICE_SUPPORT.en.md). The Japanese guide is [available here](docs/ADDING_DEVICE_SUPPORT.md).
 
-## 診断情報
+## Diagnostics
 
-**設定 → アプリ情報 → 動作ログと端末診断**から、端末仕様、能力プローブ、フォールバック結果、Dextopの動作ログを表示・コピー・共有できます。不具合報告には、必要に応じて個人情報を取り除いた診断レポートを添付してください。
+Open **Settings → App information → Operation log and device diagnostics** to view, copy, or share device specifications, capability probes, fallback results, and Dextop operation logs. Remove any personal information you do not want to publish before attaching a report to an issue.
 
-このプロジェクトは開発中です。端末やAndroidの更新により、利用できる機能や動作が変わる場合があります。
+This project is under active development. Available features and behavior may change with device firmware and Android updates.
 
-## ライセンス
+## License
 
-GPL-3.0-or-laterでライセンスされています。詳細は[LICENSE](LICENSE)を参照してください。
+Licensed under GPL-3.0-or-later. See [LICENSE](LICENSE).
