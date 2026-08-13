@@ -1,6 +1,8 @@
-# Reported Device Compatibility
+# Device Compatibility
 
-These entries are generated from manually reviewed device reports. Compatibility is recorded per exact model and firmware build; a result does not automatically apply to another build.
+<!-- DEXTOP-REPORT-CONSOLE:BEGIN -->
+
+## Community-verified device reports
 
 <details>
 <summary><strong>Google</strong> — 1 verified configuration</summary>
@@ -176,3 +178,4 @@ These entries are generated from manually reviewed device reports. Compatibility
 
 </details>
 
+<!-- DEXTOP-REPORT-CONSOLE:END -->
