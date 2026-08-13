@@ -12,6 +12,11 @@ key.properties
 service-account*.json
 play-credentials*.json
 google-services.json
+firebase_options.dart
+
+# Internal project setup notes
+docs/internal/
+docs/FIREBASE_ANALYTICS_SETUP.md
 
 # Flutter and Dart
 .dart_tool/
