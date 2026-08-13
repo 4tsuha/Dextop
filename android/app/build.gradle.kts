@@ -68,12 +68,9 @@ android {
 
     buildTypes {
         release {
-            if (!releaseSigningReady) {
-                throw GradleException(
-                    "Release signing is not configured. Copy .env.example to .env and set DEXTOP_* values."
-                )
+            if (releaseSigningReady) {
+                signingConfig = signingConfigs.getByName("release")
             }
-            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
         }
@@ -89,4 +86,16 @@ dependencies {
     implementation("dev.rikka.shizuku:provider:13.1.5")
     implementation("org.lsposed.hiddenapibypass:hiddenapibypass:6.1")
     testImplementation(kotlin("test"))
+}
+
+tasks.configureEach {
+    if (name == "packageRelease" || name == "bundleRelease") {
+        doFirst {
+            if (!releaseSigningReady) {
+                throw GradleException(
+                    "Release signing is not configured. Copy .env.example to .env and set DEXTOP_* values."
+                )
+            }
+        }
+    }
 }
