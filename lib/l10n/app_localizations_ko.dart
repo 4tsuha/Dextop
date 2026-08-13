@@ -1,0 +1,695 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Korean (`ko`).
+class AppLocalizationsKo extends AppLocalizations {
+  AppLocalizationsKo([String locale = 'ko']) : super(locale);
+
+  @override
+  String get home => '홈';
+
+  @override
+  String get settings => '설정';
+
+  @override
+  String get resolution => '해상도';
+
+  @override
+  String get theme => '테마';
+
+  @override
+  String get system => '시스템';
+
+  @override
+  String get light => '라이트';
+
+  @override
+  String get dark => '다크';
+
+  @override
+  String get display => '디스플레이';
+
+  @override
+  String get secureDisplay => '보안 표시';
+
+  @override
+  String get secureDisplayDescription => '보호된 콘텐츠 표시를 허용합니다';
+
+  @override
+  String get deviceInfo => '기기 정보';
+
+  @override
+  String get desktopMode => '사용할 데스크톱 모드';
+
+  @override
+  String get accessibilitySettings => '접근성 설정';
+
+  @override
+  String get accessibilityDescription => 'Dextop 서비스 설정을 엽니다';
+
+  @override
+  String get appInfo => '앱 정보';
+
+  @override
+  String get licenses => '오픈 소스 라이선스';
+
+  @override
+  String get licensesDescription => 'Flutter 및 사용 라이브러리 라이선스 표시';
+
+  @override
+  String get landscape => '가로';
+
+  @override
+  String get portrait => '세로';
+
+  @override
+  String get stopped => '중지됨';
+
+  @override
+  String get running => '실행 중';
+
+  @override
+  String get start => '시작';
+
+  @override
+  String get stop => '중지';
+
+  @override
+  String get customAdd => '사용자 지정 해상도 추가';
+
+  @override
+  String get editResolution => '해상도 편집';
+
+  @override
+  String get add => '추가';
+
+  @override
+  String get save => '저장';
+
+  @override
+  String get deleteResolution => '이 해상도 삭제';
+
+  @override
+  String get width => '너비';
+
+  @override
+  String get height => '높이';
+
+  @override
+  String get protectedContent => '보호된 콘텐츠 표시를 허용합니다';
+
+  @override
+  String get version => '버전 1.0.0';
+
+  @override
+  String get setupWelcome => 'Dextop에 오신 것을 환영합니다.';
+
+  @override
+  String get setupTagline => '스마트폰 하나로 완벽한 데스크톱 환경을.';
+
+  @override
+  String get setupBegin => '시작하기';
+
+  @override
+  String get setupPhaseTerms => '이용에 있어서';
+
+  @override
+  String get setupPhaseShizuku => 'Shizuku';
+
+  @override
+  String get setupPhaseDevice => '기기 확인';
+
+  @override
+  String get setupPhaseDemo => '조작 체험';
+
+  @override
+  String get back => '뒤로';
+
+  @override
+  String get continueLabel => '계속';
+
+  @override
+  String get done => '완료';
+
+  @override
+  String get incomplete => '미완료';
+
+  @override
+  String get setupSystemTitle => '시스템 기능을 이용';
+
+  @override
+  String get setupSystemDescription =>
+      'Dextop은 Shizuku와 ADB를 사용하여 가상 디스플레이, 화면 방향, 입력, 시스템 UI 등의 동작을 제어합니다.';
+
+  @override
+  String get setupDisclaimer =>
+      '단말기와 OS의 구현 차이, 시스템 업데이트, 다른 앱과의 충돌 등으로 인한 문제, 데이터 손실, 단말기 기능에 미치는 영향에 대해서는 개발자는 책임을 지지 않습니다. 내용을 이해한 후 사용하십시오.';
+
+  @override
+  String get setupShizukuTitle => 'Shizuku 준비';
+
+  @override
+  String get setupShizukuDescription =>
+      'Dextop이 시스템 기능에 안전하게 액세스하기 위해 Shizuku를 사용합니다.';
+
+  @override
+  String get setupInstallShizuku => 'Shizuku 설치';
+
+  @override
+  String get setupConfigureShizuku => 'Shizuku 설정';
+
+  @override
+  String get setupShizukuHint =>
+      'Shizuku를 열고 \"페어링\"에 나타나는 순서에 따라 설정하고 Shizuku를 시작하십시오.';
+
+  @override
+  String get setupOpenShizuku => 'Shizuku 열기';
+
+  @override
+  String get setupValidate => '설정이 완료되었습니까? 유효성 확인';
+
+  @override
+  String get setupDextopPermission => 'Dextop에 대한 권한';
+
+  @override
+  String get setupInstallPlay => 'Google Play에서 설치';
+
+  @override
+  String get setupAllowPermission => '권한 부여';
+
+  @override
+  String get setupQuestionOpen => 'Shizuku를 열었나요?';
+
+  @override
+  String get setupQuestionPair => '\'페어링\'에 표시된 모든 단계를 완료했습니까?';
+
+  @override
+  String get setupQuestionStart =>
+      'Shizuku에서 \"시작\"을 누르고 \"Shizuku가 실행 중입니다.\"라고 표시됩니까?';
+
+  @override
+  String get yes => '예';
+
+  @override
+  String get no => '아니오';
+
+  @override
+  String get setupVerified => 'Shizuku 설정을 확인했습니다';
+
+  @override
+  String get setupVerificationFailed =>
+      'Shizuku 설정 또는 시작을 확인할 수 없습니다. Shizuku의 절차를 완료한 후 다시 확인하십시오.';
+
+  @override
+  String get setupPermissionCheckFailed => 'Shizuku의 권한을 확인할 수 없습니다.';
+
+  @override
+  String get setupDeviceTitle => '이 단말기의 구성';
+
+  @override
+  String get model => '기종';
+
+  @override
+  String get vendor => '벤더';
+
+  @override
+  String get desktopUi => '데스크톱 UI';
+
+  @override
+  String get detectedResolution => '자동 감지 해상도';
+
+  @override
+  String get loadingLabel => '불러오는 중…';
+
+  @override
+  String get setupDeviceDescription => '이 정보를 바탕으로 초기 해상도와 기기별 데스크톱 제어를 설정합니다.';
+
+  @override
+  String get setupGestureTitle => '제스처로 조작 패널 호출';
+
+  @override
+  String get setupGestureDescription => '아래의 3개의 원에 3개의 손가락을 동시에 놓으십시오.';
+
+  @override
+  String get uiTwoFingerTap => '두 손가락 탭';
+
+  @override
+  String get ui3FingerTap => '세 손가락 탭';
+
+  @override
+  String get ui4Divisions => '4분할';
+
+  @override
+  String get uiDextopIsReady => 'Dextop 준비됨';
+
+  @override
+  String get uiStopDextop => 'Dextop 중지';
+
+  @override
+  String get uiDextopCanBeRestarted => 'Dextop을 재개할 수 있습니다.';
+
+  @override
+  String get uiOpenDextop => 'Dextop 열기';
+
+  @override
+  String get uiCreateADextopSession => 'Dextop 세션 만들기';
+
+  @override
+  String get uiDextopWorkspaceJson => 'Dextop 작업 공간 JSON';
+
+  @override
+  String get uiPerformanceDisplayOnDextop => 'Dextop에 성능 오버레이 표시';
+
+  @override
+  String get uiDoNotSleepWhileRunningDextop => 'Dextop 실행 중 화면 켜짐 유지';
+
+  @override
+  String get uiRealTimeDisplayOfFpsMemoryPower => 'FPS, 메모리, 전력 소비, 배터리 실시간 표시';
+
+  @override
+  String get uiCouldNotLoadJson => 'JSON을 로드할 수 없습니다.';
+
+  @override
+  String get uiSecureSettingsPermission => 'Secure Settings 권한';
+
+  @override
+  String get uiAllowShizukuPermissions => 'Shizuku의 권한 부여';
+
+  @override
+  String get uiInstallShizuku => 'Shizuku 설치';
+
+  @override
+  String get uiCheckingShizukuConnection => 'Shizuku 연결 확인 중';
+
+  @override
+  String get uiShizukuConnection => 'Shizuku 연결';
+
+  @override
+  String get uiCopy => '사본';
+
+  @override
+  String get uiOthers => '기타';
+
+  @override
+  String get uiAccessibilityOverlay => '접근성 오버레이';
+
+  @override
+  String get uiAccessibilityServices => '내게 필요한 옵션 서비스';
+
+  @override
+  String get uiAppNotFound => '앱을 찾을 수 없음';
+
+  @override
+  String get uiAppsAndWorkspace => '앱 및 작업공간';
+
+  @override
+  String get uiLaunchTheAppAndConfigureYourWorkspace => '앱 시작 및 작업 공간 구성';
+
+  @override
+  String get uiRestartTheApp => '앱 다시 시작';
+
+  @override
+  String get uiSearchApp => '앱 검색';
+
+  @override
+  String get uiAppMemory => '앱 메모리';
+
+  @override
+  String get uiAppLauncher => '앱 런처';
+
+  @override
+  String get uiAppLauncherSettings => '앱 런처 설정';
+
+  @override
+  String get uiAppLaunchFunction => '앱 시작 기능';
+
+  @override
+  String get uiImport => '가져오기';
+
+  @override
+  String get uiExport => '내보내기';
+
+  @override
+  String get uiCursor => '커서';
+
+  @override
+  String get uiCancel => '취소';
+
+  @override
+  String get uiQuickSettingsTile => '빠른 설정 타일';
+
+  @override
+  String get uiGesture => '제스처';
+
+  @override
+  String get uiSecondaryIme => '보조 IME';
+
+  @override
+  String get uiSecureDisplayFoldable => '보안 디스플레이, Foldable';
+
+  @override
+  String get uiSecurity => '보안';
+
+  @override
+  String get uiTap => '탭';
+
+  @override
+  String get uiTapPressAndHoldMultiFingerOperation => '탭, 길게 누르기, 여러 손가락 조작';
+
+  @override
+  String get uiOpenAppOnDesktop => '데스크톱에서 앱 열기';
+
+  @override
+  String get uiDesktopMode => '데스크톱 모드';
+
+  @override
+  String get uiDesktopFeatures => '데스크톱 기능';
+
+  @override
+  String get uiTrackpad => '트랙패드';
+
+  @override
+  String get uiDrag => '드래그';
+
+  @override
+  String get uiBattery => '배터리';
+
+  @override
+  String get uiPerformance => '공연';
+
+  @override
+  String get uiPerformanceCompatibility => '성능 및 호환성';
+
+  @override
+  String get uiItSupportsMultiTouchAndTheThree =>
+      '멀티터치를 활성화하면 세 손가락 제스처가 화면 왼쪽 가장자리 스와이프로 변경됩니다.';
+
+  @override
+  String get uiMainLarge2Sub => '큰 메인 창 + 보조 창 2개';
+
+  @override
+  String get uiMainLeft => '메인(왼쪽)';
+
+  @override
+  String get uiLayout => '레이아웃';
+
+  @override
+  String get uiWorkSpace => '작업 공간';
+
+  @override
+  String get uiCopiedWorkspaceJsonToClipboard => '작업 공간 JSON을 클립 보드에 복사했습니다.';
+
+  @override
+  String get uiImportWorkspace => '작업 공간 가져오기';
+
+  @override
+  String get uiSaveWorkspace => '작업 공간 저장';
+
+  @override
+  String get uiDeleteWorkspace => '작업공간 삭제';
+
+  @override
+  String get uiEditWorkspace => '작업공간 편집';
+
+  @override
+  String get uiUp => '위로';
+
+  @override
+  String get uiDividedIntoUpperAndLowerParts => '상하 2분할';
+
+  @override
+  String get uiUpperHalf => '상반부';
+
+  @override
+  String get uiMoveDown => '아래로 이동';
+
+  @override
+  String get uiLowerHalf => '하반부';
+
+  @override
+  String get uiCenter => '중앙';
+
+  @override
+  String get uiCompatibilityDiagnosis => '호환성 진단';
+
+  @override
+  String get uiVirtualDisplayCreation => '가상 디스플레이 생성';
+
+  @override
+  String get uiOpenASavedAppConfiguration => '저장된 앱 구성 열기';
+
+  @override
+  String get uiNoSavedWorkspaces => '저장된 작업공간 없음';
+
+  @override
+  String get uiInputAndGestures => '입력과 제스처';
+
+  @override
+  String get uiInputMode => '입력 모드';
+
+  @override
+  String get uiCancelFullScreen => '전체 화면 해제';
+
+  @override
+  String get uiReDiagnosis => '재진단';
+
+  @override
+  String get uiRestart => '재개';
+
+  @override
+  String get uiAvailableMemory => '사용 가능한 메모리';
+
+  @override
+  String get uiDelete => '삭제';
+
+  @override
+  String get uiYouCanRestoreYourPreviousSession => '마지막 세션을 복구할 수 있습니다.';
+
+  @override
+  String get uiRight => '오른쪽';
+
+  @override
+  String get uiRight13 => '오른쪽 1/3';
+
+  @override
+  String get uiRight23 => '오른쪽 2/3';
+
+  @override
+  String get uiRightClick => '오른쪽 클릭';
+
+  @override
+  String get uiUpperRight => '오른쪽 상단';
+
+  @override
+  String get uiLowerRight => '오른쪽 하단';
+
+  @override
+  String get uiRightHalf => '오른쪽 절반';
+
+  @override
+  String get uiName => '이름';
+
+  @override
+  String get uiLargeScreenFoldable => '큰 화면 · Foldable';
+
+  @override
+  String get uiActualFps => '실측 FPS';
+
+  @override
+  String get uiExperimentalMultiTouch => '실험적인 멀티 터치';
+
+  @override
+  String get uiExperimentalFeatures => '실험 기능';
+
+  @override
+  String get uiLeft => '왼쪽';
+
+  @override
+  String get uiLeft13 => '왼쪽 1/3';
+
+  @override
+  String get uiLeft13Right23 => '왼쪽 1/3 · 오른쪽 2/3';
+
+  @override
+  String get uiLeft23 => '왼쪽 2/3';
+
+  @override
+  String get uiLeft23Right13 => '왼쪽 2/3 · 오른쪽 1/3';
+
+  @override
+  String get uiLeftCenterRight => '왼쪽, 중앙, 오른쪽';
+
+  @override
+  String get uiUpperLeft => '왼쪽 상단';
+
+  @override
+  String get uiUpperLeftUpperRightLowerHalf => '좌상, 우상, 하반부';
+
+  @override
+  String get uiLowerLeft => '왼쪽 하단';
+
+  @override
+  String get uiLeftHalf => '왼쪽 절반';
+
+  @override
+  String get uiDividedIntoLeftAndRight => '좌우 2분할';
+
+  @override
+  String get uiSwipeRightWithThreeFingersFromThe =>
+      '왼쪽 끝에서 3 손가락으로 오른쪽으로 스 와이프';
+
+  @override
+  String get uiRecoverySession => '복구 세션';
+
+  @override
+  String get uiEstimatedPowerConsumption => '예상 소비 전력';
+
+  @override
+  String get uiOperationOverlay => '조작 오버레이';
+
+  @override
+  String get uiShowActionOverlay => '조작 오버레이 표시';
+
+  @override
+  String get uiOperationMenu => '조작 메뉴';
+
+  @override
+  String get uiThereIsAnExistingSession => '기존 세션이 있습니다.';
+
+  @override
+  String get uiSaveConfiguration => '구성 저장';
+
+  @override
+  String get uiRestorePrivileges => '권한 복구';
+
+  @override
+  String get uiChangeToHorizontalHold => '가로로 변경';
+
+  @override
+  String get uiPreparationIsRequired => '준비가 필요';
+
+  @override
+  String get uiPhysicalKeyboard => '물리적 키보드';
+
+  @override
+  String get uiPhysicalMouse => '물리 마우스';
+
+  @override
+  String get uiConditionAndDiagnosis => '상태 및 진단';
+
+  @override
+  String get uiPreventsTheScreenFromTurningOffAutomatically => '화면 자동 꺼짐 방지';
+
+  @override
+  String get uiDestruction => '삭제';
+
+  @override
+  String get uiTerminalAndPermissions => '터미널 및 권한';
+
+  @override
+  String get uiDeviceInformationDesktopModeAccessibility =>
+      '터미널 정보, 데스크톱 모드, 접근성';
+
+  @override
+  String get uiTerminalResolution => '터미널 해상도';
+
+  @override
+  String get uiEnd => '종료';
+
+  @override
+  String get uiTerminationProcessingCompletedSuccessfully =>
+      '세션이 정상적으로 종료되었습니다.';
+
+  @override
+  String get uiEdit => '편집';
+
+  @override
+  String get uiChangeToPortraitOrientation => '세로로 변경';
+
+  @override
+  String get uiVerticalHorizontalSwitching => '종횡 전환';
+
+  @override
+  String get uiDisplayOptimization => '디스플레이 최적화';
+
+  @override
+  String get uiDisplayRefreshRate => '디스플레이 새로고침 속도';
+
+  @override
+  String get uiReproduction => '복사본 만들기';
+
+  @override
+  String get uiManageLaunchedAppsAndConfigurations => '시작할 앱 및 구성 관리';
+
+  @override
+  String get uiCouldNotStart => '시작할 수 없습니다.';
+
+  @override
+  String get uiLongPress => '길게 누르기';
+
+  @override
+  String get uiAutomaticallyUsesMeasuredResolutionForOpenAnd =>
+      '열린 상태와 닫힌 상태의 실측 해상도 자동 사용';
+
+  @override
+  String get uiStart => '시작';
+
+  @override
+  String get uiAutomaticSwitchingAccordingToOpenClosedState =>
+      '개폐 상태에 따라 자동 전환';
+
+  @override
+  String get uiOpeningQuote => '“';
+
+  @override
+  String get uiDeleteWorkspaceQuestionSuffix => '” 작업 공간을 삭제하시겠습니까?';
+
+  @override
+  String get uiAbnormalSessionWarning =>
+      '세션이 비정상 상태로 종료되었습니다.\n일부 Android 시스템 기능이 여전히 비활성화되어 있을 수 있습니다.';
+
+  @override
+  String get uiChecking => '확인 중';
+
+  @override
+  String get uiIdle => '대기 중';
+
+  @override
+  String get uiAvailable => 'Available';
+
+  @override
+  String get uiUnavailable => 'Unavailable';
+
+  @override
+  String get appName => 'Dextop';
+
+  @override
+  String get uiAndroid => 'Android';
+
+  @override
+  String get uiGitHub => 'GitHub';
+
+  @override
+  String get uiGitHubRepository => 'NarYuki/Dextop';
+
+  @override
+  String get diagnosticLog => '작동 로그 및 기기 진단';
+
+  @override
+  String get diagnosticLogDescription => '앱 로그, 기능 감지 및 상세 기기 사양을 표시합니다';
+
+  @override
+  String get loadDiagnosticLog => '진단 보고서 불러오기';
+
+  @override
+  String get copyDiagnosticLog => '복사';
+
+  @override
+  String get shareDiagnosticLog => '공유';
+
+  @override
+  String get clearDiagnosticLog => '로그 지우기';
+}

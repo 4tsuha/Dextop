@@ -1,0 +1,23 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:free_dextop/l10n/app_localizations.dart';
+import 'package:free_dextop/app_strings.dart';
+import 'package:free_dextop/features_page.dart';
+import 'package:free_dextop/setup_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+part 'app_info.dart';
+part 'overlay_entry.dart';
+part 'app_shell.dart';
+part 'home_screen.dart';
+part 'home_content.dart';
+part 'resolution_ui.dart';
+part 'settings_screen.dart';
+
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const DextopApp());
+}

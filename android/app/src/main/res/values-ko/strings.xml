@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_service_description">Dextop 가상 디스플레이, 입력 및 제어 패널을 제어합니다</string>
+</resources>

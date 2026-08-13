@@ -1,0 +1,635 @@
+package moe.n4tsu.dextop
+
+import android.Manifest
+import android.content.Intent
+import android.content.ComponentName
+import android.content.pm.ActivityInfo
+import android.content.pm.PackageManager
+import android.hardware.display.DisplayManager
+import android.net.Uri
+import android.os.ParcelFileDescriptor
+import android.os.Handler
+import android.os.Looper
+import android.os.Build
+import android.provider.Settings
+import android.util.Log
+import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.plugin.common.MethodChannel
+import java.io.InputStream
+import java.io.OutputStream
+import moe.shizuku.server.IRemoteProcess
+import moe.shizuku.server.IShizukuService
+import rikka.shizuku.Shizuku
+
+class MainActivity : FlutterActivity() {
+    companion object {
+        private var instance: MainActivity? = null
+        private var orientationBeforeSession = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        private var physicalOrientationBeforeSession = android.content.res.Configuration.ORIENTATION_UNDEFINED
+
+        fun rememberOrientation() {
+            instance?.let {
+                orientationBeforeSession = it.requestedOrientation
+                physicalOrientationBeforeSession = it.resources.configuration.orientation
+            }
+        }
+
+        fun setDisplayOrientation(portrait: Boolean) {
+            instance?.requestedOrientation = if (portrait) {
+                ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            } else {
+                ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            }
+        }
+
+        fun restoreOrientation() {
+            instance?.let { activity ->
+                activity.requestedOrientation = orientationBeforeSession
+                if (orientationBeforeSession == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
+                    activity.requestedOrientation = when (physicalOrientationBeforeSession) {
+                        android.content.res.Configuration.ORIENTATION_PORTRAIT ->
+                            ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT
+                        android.content.res.Configuration.ORIENTATION_LANDSCAPE ->
+                            ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                        else -> ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                    }
+                    activity.window.decorView.postDelayed({
+                        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                    }, 500)
+                }
+            }
+        }
+    }
+
+    private val channelName = "app.freedextop/display"
+    private val logTag = "Dextop"
+    private val permissionRequestCode = 0x4458
+    private var pendingPermissionResult: MethodChannel.Result? = null
+    private var pendingStartResult: MethodChannel.Result? = null
+    private var shizukuBinderAvailable = false
+    private val permissionHandler = Handler(Looper.getMainLooper())
+    private val permissionTimeout = Runnable {
+        pendingPermissionResult?.error("permission_timeout", NativeStrings.text("nativeShizukuPermissionCheckTimedOut"), null)
+        pendingPermissionResult = null
+    }
+    private val startTimeout = Runnable {
+        val pendingResult = pendingStartResult ?: return@Runnable
+        pendingStartResult = null
+        MirrorService.stopActive()
+        pendingResult.error(
+            "start_timeout",
+            "Dextop did not finish creating and attaching the display in time",
+            null
+        )
+    }
+    private var flutterChannel: MethodChannel? = null
+    private val binderReceivedListener = Shizuku.OnBinderReceivedListener {
+        shizukuBinderAvailable = true
+        flutterChannel?.invokeMethod("shizukuStatusChanged", null)
+    }
+    private val binderDeadListener = Shizuku.OnBinderDeadListener {
+        shizukuBinderAvailable = false
+        flutterChannel?.invokeMethod("shizukuStatusChanged", null)
+    }
+    private val permissionListener = Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
+        if (requestCode == permissionRequestCode) {
+            permissionHandler.removeCallbacks(permissionTimeout)
+            Log.i(logTag, "Shizuku permission result=$grantResult")
+            if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                runCatching { grantSecureSettings() }
+                    .onSuccess { pendingPermissionResult?.success(true) }
+                    .onFailure { pendingPermissionResult?.error("grant", it.message, null) }
+            } else if (grantResult == PackageManager.PERMISSION_DENIED) {
+                pendingPermissionResult?.error(
+                    "permission_denied",
+                    NativeStrings.text("nativePermissionDeniedToShizuku"),
+                    null
+                )
+            } else {
+                pendingPermissionResult?.error(
+                    "permission_unknown",
+                    "${NativeStrings.text("nativeUnknownPermissionResult")}: $grantResult",
+                    null
+                )
+            }
+            pendingPermissionResult = null
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        instance = this
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+    }
+
+    override fun onDestroy() {
+        if (instance === this) instance = null
+        super.onDestroy()
+    }
+
+    override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+        super.configureFlutterEngine(flutterEngine)
+        Shizuku.addRequestPermissionResultListener(permissionListener)
+        Shizuku.addBinderReceivedListenerSticky(binderReceivedListener)
+        Shizuku.addBinderDeadListener(binderDeadListener)
+        flutterChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
+        flutterChannel?.setMethodCallHandler { call, result ->
+            when (call.method) {
+                "status" -> result.success(status())
+                "requestShizuku" -> requestShizuku(result)
+                "openShizuku" -> openShizuku(result)
+                "showOverlayDemo" -> {
+                    MirrorService.showOverlayDemo(this)
+                    result.success(true)
+                }
+                "hideOverlayDemo" -> {
+                    MirrorService.hideOverlayDemo()
+                    result.success(null)
+                }
+                "start" -> startDisplay(call.arguments as? Map<*, *>, result)
+                "stop" -> stopDisplay(result)
+                "apps" -> Thread {
+                    val apps = AppCatalog(this).launchableApps()
+                    runOnUiThread { result.success(apps) }
+                }.start()
+                "appsMetadata" -> Thread {
+                    val apps = AppCatalog(this).launchableApps(includeIcons = false)
+                    runOnUiThread { result.success(apps) }
+                }.start()
+                "appIcons" -> Thread {
+                    val icons = AppCatalog(this).launchableAppIcons()
+                    runOnUiThread { result.success(icons) }
+                }.start()
+                "launchApp" -> launchApp(call.arguments as? Map<*, *>, result)
+                "diagnostics" -> result.success(DeviceDiagnostics(this).report())
+                "repairState" -> result.success(repairState())
+                "repairAndroid" -> repairAndroid(result)
+                "restartApp" -> restartApp(result)
+                "consumeTileAction" -> {
+                    val requested = intent?.action == DextopTileService.ACTION_OPEN_LAST_WORKSPACE
+                    if (requested) intent?.action = null
+                    result.success(requested)
+                }
+                "metrics" -> result.success(DeviceDiagnostics(this).metrics(MirrorService.inputMode(), MirrorService.measuredFps()))
+                "diagnosticReport" -> Thread {
+                    OperationLog.i(this, "MainActivity", "diagnostic report requested")
+                    val report = DiagnosticReport(this).build()
+                    runOnUiThread { result.success(report) }
+                }.start()
+                "clearDiagnosticLog" -> {
+                    OperationLog.clear(this)
+                    result.success(null)
+                }
+                "shareDiagnosticReport" -> Thread {
+                    val report = DiagnosticReport(this).build()
+                    runOnUiThread {
+                        startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
+                            type = "text/plain"
+                            putExtra(Intent.EXTRA_SUBJECT, "Dextop diagnostic report")
+                            putExtra(Intent.EXTRA_TEXT, report)
+                        }, "Share diagnostic report"))
+                        result.success(null)
+                    }
+                }.start()
+                "performanceHud" -> {
+                    MirrorService.setPerformanceHud(call.argument<Boolean>("enabled") == true)
+                    result.success(null)
+                }
+                "keepAwake" -> {
+                    MirrorService.setKeepAwake(call.argument<Boolean>("enabled") == true)
+                    result.success(null)
+                }
+                "recovery" -> result.success(SessionJournal(this).snapshot())
+                "clearRecovery" -> discardRecovery(result)
+                "openAccessibility" -> openSettings(Settings.ACTION_ACCESSIBILITY_SETTINGS, result)
+                "openWirelessDebugging" -> openSettings("android.settings.WIRELESS_DEBUGGING_SETTINGS", result)
+                "openUrl" -> {
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(call.argument<String>("url"))))
+                    result.success(null)
+                }
+                else -> result.notImplemented()
+            }
+        }
+    }
+
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        Shizuku.removeRequestPermissionResultListener(permissionListener)
+        Shizuku.removeBinderReceivedListener(binderReceivedListener)
+        Shizuku.removeBinderDeadListener(binderDeadListener)
+        flutterChannel = null
+        permissionHandler.removeCallbacks(permissionTimeout)
+        permissionHandler.removeCallbacks(startTimeout)
+        pendingPermissionResult = null
+        pendingStartResult = null
+        super.cleanUpFlutterEngine(flutterEngine)
+    }
+
+    private fun status(): Map<String, Any> {
+        val installed = runCatching {
+            packageManager.getPackageInfo("moe.shizuku.privileged.api", 0)
+        }.isSuccess || runCatching {
+            packageManager.getPackageInfo("moe.shizuku.manager", 0)
+        }.isSuccess
+        // A binder from an earlier Shizuku session can remain visible briefly even
+        // after the manager has been removed.  Installation is therefore a hard
+        // prerequisite for both the service and permission states.
+        val wirelessDebuggingEnabled = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+            runCatching {
+                Settings.Global.getInt(contentResolver, "adb_wifi_enabled", 0) == 1
+            }.getOrDefault(false)
+        // Do not probe Shizuku here. This method is called frequently while the
+        // setup UI is visible; binder availability is driven by Shizuku's own
+        // received/dead callbacks instead.
+        val binderAlive = installed && shizukuBinderAvailable
+        // The guided setup uses wireless debugging. A live/stale binder alone is
+        // not enough to mark that setup as completed.
+        val running = wirelessDebuggingEnabled && binderAlive
+        val granted = running && runCatching {
+            Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+        }.getOrDefault(false)
+        val status = mapOf(
+            "active" to MirrorService.isActive(),
+            "privileged" to hasSecureSettingsPermission(),
+            "shizukuInstalled" to installed,
+            "wirelessDebuggingEnabled" to wirelessDebuggingEnabled,
+            "shizukuBinderAlive" to binderAlive,
+            "shizukuRunning" to running,
+            "shizukuGranted" to granted
+            ,"manufacturer" to Build.MANUFACTURER
+            ,"model" to Build.MODEL
+            ,"androidVersion" to Build.VERSION.RELEASE
+            ,"sdk" to Build.VERSION.SDK_INT
+            ,"desktopMode" to DesktopEnvironmentRegistry.current().displayName
+        )
+        Log.i(logTag, "status=$status")
+        OperationLog.i(this, "MainActivity", "status=$status")
+        return status
+    }
+
+    private fun requestShizuku(result: MethodChannel.Result) {
+        Log.i(logTag, "requestShizuku")
+        val installed = runCatching {
+            packageManager.getPackageInfo("moe.shizuku.privileged.api", 0)
+        }.isSuccess || runCatching {
+            packageManager.getPackageInfo("moe.shizuku.manager", 0)
+        }.isSuccess
+        if (!installed) {
+            result.error("shizuku_missing", NativeStrings.text("nativePleaseInstallShizuku"), null)
+            return
+        }
+        if (!runCatching { Shizuku.pingBinder() }.getOrDefault(false)) {
+            result.error("shizuku_offline", NativeStrings.text("nativePleaseStartShizuku"), null)
+            return
+        }
+        if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+            runCatching { grantSecureSettings() }
+                .onSuccess { result.success(true) }
+                .onFailure { result.error("grant", it.message, null) }
+            return
+        }
+        if (pendingPermissionResult != null) {
+            result.error("permission_busy", NativeStrings.text("nativePermissionRequestInProgress"), null)
+            return
+        }
+        pendingPermissionResult = result
+        permissionHandler.postDelayed(permissionTimeout, 15_000)
+        runCatching { Shizuku.requestPermission(permissionRequestCode) }.onFailure {
+            permissionHandler.removeCallbacks(permissionTimeout)
+            pendingPermissionResult = null
+            result.error("permission", it.message, null)
+        }
+    }
+
+    private fun openShizuku(result: MethodChannel.Result) {
+        val launch = packageManager.getLaunchIntentForPackage("moe.shizuku.privileged.api")
+            ?: packageManager.getLaunchIntentForPackage("moe.shizuku.manager")
+        if (launch != null) {
+            startActivity(launch)
+            result.success(null)
+            return
+        }
+        runCatching {
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://shizuku.rikka.app/download/")))
+        }.onSuccess {
+            result.success(null)
+        }.onFailure {
+            result.error("shizuku", it.message, null)
+        }
+    }
+
+    private fun startDisplay(arguments: Map<*, *>?, result: MethodChannel.Result) {
+        val width = (arguments?.get("width") as? Number)?.toInt() ?: 1920
+        val height = (arguments?.get("height") as? Number)?.toInt() ?: 1080
+        val density = (arguments?.get("density") as? Number)?.toInt() ?: 240
+        val secure = arguments?.get("secure") == true
+        val decorations = (arguments?.get("decorations") as? Boolean)
+            ?: !Build.MANUFACTURER.equals("samsung", ignoreCase = true)
+        if (width !in 480..7680 || height !in 480..7680 || density !in 80..640) {
+            result.error("profile", NativeStrings.text("nativeDisplayProfileIsOutOfRange"), null)
+            return
+        }
+        val binderReady = shizukuBinderAvailable && runCatching {
+            Shizuku.getBinder()?.isBinderAlive == true
+        }.getOrDefault(false)
+        val permissionGranted = binderReady && runCatching {
+            Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+        }.getOrDefault(false)
+        if (!permissionGranted) {
+            shizukuBinderAvailable = binderReady
+            result.error(
+                "shizuku_offline",
+                NativeStrings.text("nativePleaseStartShizuku"),
+                null
+            )
+            return
+        }
+        if (pendingStartResult != null) {
+            result.error("start_busy", "A Dextop start is already in progress", null)
+            return
+        }
+        Log.i(logTag, "startDisplay ${width}x$height/$density decorations=$decorations secure=$secure")
+        rememberOrientation()
+        requestedOrientation = if (height > width) {
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        } else {
+            ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        }
+        pendingStartResult = result
+        permissionHandler.postDelayed(startTimeout, 12_000)
+        MirrorService.launch(this, width, height, density, secure, decorations) { outcome ->
+            runOnUiThread {
+                val pendingResult = pendingStartResult ?: return@runOnUiThread
+                pendingStartResult = null
+                permissionHandler.removeCallbacks(startTimeout)
+                outcome.onSuccess { pendingResult.success(it) }
+                    .onFailure { pendingResult.error("start_failed", it.message, null) }
+            }
+        }
+    }
+
+    private fun stopDisplay(result: MethodChannel.Result) {
+        Log.i(logTag, "stopDisplay")
+        permissionHandler.removeCallbacks(startTimeout)
+        pendingStartResult?.error("start_cancelled", "Dextop startup was cancelled", null)
+        pendingStartResult = null
+        MirrorService.stopActive()
+        restoreOrientation()
+        result.success(null)
+    }
+
+    private fun discardRecovery(result: MethodChannel.Result) {
+        Log.i(logTag, "discardRecovery")
+        MirrorService.stopActive()
+        runCatching {
+            val journal = SessionJournal(this)
+            journal.restoreSystemSettings()
+            val own = ComponentName(this, MirrorService::class.java)
+            val remaining = Settings.Secure.getString(
+                contentResolver,
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            ).orEmpty().split(':').filter { raw ->
+                raw.isNotBlank() && ComponentName.unflattenFromString(raw)?.let { name ->
+                    !(name.packageName == packageName && name.className == own.className)
+                } != false
+            }
+            Settings.Secure.putString(
+                contentResolver,
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
+                remaining.joinToString(":")
+            )
+            Settings.Secure.putInt(
+                contentResolver,
+                Settings.Secure.ACCESSIBILITY_ENABLED,
+                if (remaining.isEmpty()) 0 else 1
+            )
+            runCatching {
+                PrivilegedAccess(logTag).execute(
+                    "cmd", "statusbar", "send-disable-flag", "none"
+                )
+            }
+            journal.clear()
+            restoreOrientation()
+            getSharedPreferences("dextop_cleanup_state", MODE_PRIVATE).edit()
+                .putBoolean("cleanup_pending", false)
+                .putBoolean("paused_by_user", false)
+                .putLong("verified_at", System.currentTimeMillis())
+                .commit()
+        }.onSuccess {
+            result.success(null)
+        }.onFailure { error ->
+            Log.e(logTag, "discard recovery failed", error)
+            result.error("recovery", error.message, null)
+        }
+    }
+
+    private fun repairState(): Map<String, Any> {
+        val component = ComponentName(this, MirrorService::class.java)
+        val enabled = Settings.Secure.getString(
+            contentResolver,
+            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ).orEmpty().split(':').any {
+            ComponentName.unflattenFromString(it)?.let { name ->
+                name.packageName == packageName && name.className == component.className
+            } == true
+        }
+        val cleanupPreferences = getSharedPreferences("dextop_cleanup_state", MODE_PRIVATE)
+        val cleanupPending = cleanupPreferences.getBoolean("cleanup_pending", false)
+        val pausedByUser = cleanupPreferences.getBoolean("paused_by_user", false)
+        val recovery = SessionJournal(this).snapshot()
+        val transactionOpen = recovery["transactionOpen"] == true
+        val pausedSession = recovery["recoverable"] == true && recovery["phase"] == "paused"
+        return mapOf(
+            // Accessibility can legitimately remain enabled during setup/demo.
+            // A user-paused session is also intentional and must be resumed or
+            // discarded through the recovery card, never treated as corruption.
+            "required" to (!MirrorService.isActive() &&
+                !pausedByUser && !pausedSession &&
+                (transactionOpen || cleanupPending)),
+            "accessibilityResidual" to enabled,
+            "displayResidual" to transactionOpen,
+            "cleanupPending" to cleanupPending,
+            "pausedByUser" to pausedByUser,
+            "pausedSession" to pausedSession
+        )
+    }
+
+    private fun repairAndroid(result: MethodChannel.Result) {
+        runCatching {
+            MirrorService.stopActive()
+            val journal = SessionJournal(this)
+            journal.restoreSystemSettings()
+            val own = ComponentName(this, MirrorService::class.java)
+            val remaining = Settings.Secure.getString(
+                contentResolver,
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+            ).orEmpty().split(':').filter { raw ->
+                raw.isNotBlank() && ComponentName.unflattenFromString(raw)?.let { name ->
+                    !(name.packageName == packageName && name.className == own.className)
+                } != false
+            }
+            Settings.Secure.putString(
+                contentResolver,
+                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES,
+                remaining.joinToString(":")
+            )
+            Settings.Secure.putInt(
+                contentResolver,
+                Settings.Secure.ACCESSIBILITY_ENABLED,
+                if (remaining.isEmpty()) 0 else 1
+            )
+            // Explicitly clear any disable flags associated with Dextop's
+            // previous accessibility binder token. Binder death normally does
+            // this, but vendor SystemUI implementations can retain the state.
+            runCatching {
+                val access = PrivilegedAccess(logTag)
+                access.execute("cmd", "statusbar", "send-disable-flag", "none")
+            }
+            journal.clear()
+            restoreOrientation()
+            getSharedPreferences("dextop_cleanup_state", MODE_PRIVATE).edit()
+                .putBoolean("cleanup_pending", false)
+                .putBoolean("paused_by_user", false)
+                .putLong("verified_at", System.currentTimeMillis())
+                .commit()
+        }.onSuccess { result.success(null) }
+            .onFailure { error -> result.error("repair", error.message, null) }
+    }
+
+    private fun restartApp(result: MethodChannel.Result) {
+        result.success(null)
+        val launch = packageManager.getLaunchIntentForPackage(packageName)?.apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        } ?: return
+        Handler(Looper.getMainLooper()).postDelayed({
+            startActivity(launch)
+            finishAffinity()
+        }, 120)
+    }
+
+    private fun launchApp(arguments: Map<*, *>?, result: MethodChannel.Result) {
+        val packageName = arguments?.get("package") as? String
+        if (packageName.isNullOrBlank()) {
+            result.error("app", NativeStrings.text("nativeNoAppSelected"), null)
+            return
+        }
+        if (!MirrorService.isActive()) {
+            result.error("display", NativeStrings.text("nativePleaseStartDextopFirst"), null)
+            return
+        }
+        val bounds = (arguments["bounds"] as? List<*>)?.mapNotNull { (it as? Number)?.toInt() }
+            ?.takeIf { it.size == 4 }
+            ?.let { android.graphics.Rect(it[0], it[1], it[2], it[3]) }
+        val position = arguments["position"] as? String
+        fun attempt(remaining: Int) {
+            val launched = if (position != null) {
+                MirrorService.launchPackageAt(packageName, position)
+            } else {
+                MirrorService.launchPackage(packageName, bounds)
+            }
+            if (launched) result.success(null)
+            else if (remaining > 0 && MirrorService.isActive()) {
+                Handler(Looper.getMainLooper()).postDelayed({ attempt(remaining - 1) }, 150)
+            } else result.error("app", NativeStrings.text("nativeCouldNotStartApp"), null)
+        }
+        attempt(20)
+    }
+
+    private fun writeOverlaySetting(
+        value: String,
+        result: MethodChannel.Result,
+        onSuccess: () -> Unit = {}
+    ) {
+        if (hasSecureSettingsPermission()) {
+            Log.i(logTag, "writeOverlaySetting direct value=$value")
+            runCatching {
+                Settings.Global.putString(contentResolver, "overlay_display_devices", value)
+            }.onSuccess {
+                onSuccess()
+                result.success(null)
+            }.onFailure {
+                Log.e(logTag, "writeOverlaySetting failed", it)
+                result.error("settings", it.message, null)
+            }
+            return
+        }
+        if (!runCatching { Shizuku.pingBinder() }.getOrDefault(false) ||
+            Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED
+        ) {
+            result.error("permission", NativeStrings.text("nativeRequiresConnectionToShizukuAndPermissions"), null)
+            return
+        }
+        runCatching {
+            Log.i(logTag, "writeOverlaySetting through Shizuku value=$value")
+            val process = remoteProcess(
+                arrayOf("settings", "put", "global", "overlay_display_devices", value)
+            )
+            val error = process.errorStream.bufferedReader().use { it.readText() }
+            val exit = process.waitFor()
+            check(exit == 0) { error.ifBlank { "settings command failed" } }
+        }.onSuccess {
+            onSuccess()
+            result.success(null)
+        }.onFailure {
+            Log.e(logTag, "Shizuku settings command failed", it)
+            result.error("settings", it.message, null)
+        }
+    }
+
+    private fun openSettings(action: String, result: MethodChannel.Result) {
+        runCatching {
+            startActivity(Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        }.onSuccess {
+            result.success(null)
+        }.onFailure {
+            result.error("settings", it.message, null)
+        }
+    }
+
+    private fun hasSecureSettingsPermission(): Boolean {
+        return checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun remoteProcess(command: Array<String>): Process {
+        val binder = Shizuku.getBinder()
+            ?: error(NativeStrings.text("nativeShizukuBinderUnavailable"))
+        val remote = IShizukuService.Stub.asInterface(binder).newProcess(command, null, null)
+        return BinderProcess(remote)
+    }
+
+    private fun grantSecureSettings() {
+        if (hasSecureSettingsPermission()) return
+        Log.i(logTag, "grantSecureSettings package=$packageName")
+        val process = remoteProcess(
+            arrayOf(
+                "pm",
+                "grant",
+                packageName,
+                Manifest.permission.WRITE_SECURE_SETTINGS
+            )
+        )
+        val error = process.errorStream.bufferedReader().use { it.readText() }
+        val exit = process.waitFor()
+        check(exit == 0) { error.ifBlank { "WRITE_SECURE_SETTINGS grant failed" } }
+        Log.i(logTag, "grantSecureSettings complete")
+    }
+
+    private class BinderProcess(private val remote: IRemoteProcess) : Process() {
+        private val input by lazy { ParcelFileDescriptor.AutoCloseInputStream(remote.inputStream) }
+        private val output by lazy { ParcelFileDescriptor.AutoCloseOutputStream(remote.outputStream) }
+        private val error by lazy { ParcelFileDescriptor.AutoCloseInputStream(remote.errorStream) }
+
+        override fun getInputStream(): InputStream = input
+        override fun getOutputStream(): OutputStream = output
+        override fun getErrorStream(): InputStream = error
+        override fun waitFor(): Int = remote.waitFor()
+        override fun exitValue(): Int = remote.exitValue()
+        override fun destroy() = remote.destroy()
+        override fun destroyForcibly(): Process = apply { destroy() }
+        override fun isAlive(): Boolean = remote.alive()
+    }
+}
