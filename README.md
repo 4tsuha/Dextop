@@ -10,6 +10,18 @@
 
 Dextop is an open-source Android app that creates a virtual display and provides a desktop-like workspace using only a smartphone. It uses Shizuku and Android system services to control app launching, window placement, touch input, orientation, and related desktop behavior.
 
+## Screenshots and demo
+
+<table>
+  <tr>
+    <td width="20%" align="center"><img src="docs/media/home.jpg" alt="Dextop home screen"><br><sub>Home and workspaces</sub></td>
+    <td width="20%" align="center"><img src="docs/media/desktop.jpg" alt="Dextop desktop"><br><sub>Desktop</sub></td>
+    <td width="20%" align="center"><img src="docs/media/control-overlay.jpg" alt="Dextop control overlay"><br><sub>Control overlay</sub></td>
+    <td width="20%" align="center"><img src="docs/media/multi-window.jpg" alt="Dextop multi-window workspace"><br><sub>Multi-window workspace</sub></td>
+    <td width="20%" align="center"><a href="docs/media/dextop-demo.mp4"><img src="docs/media/demo-poster.jpg" alt="Play the Dextop demo video"></a><br><sub>▶ Demo video</sub></td>
+  </tr>
+</table>
+
 ## Features
 
 - [x] Virtual displays with configurable resolution, density, and portrait or landscape orientation

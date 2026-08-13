@@ -10,6 +10,18 @@
 
 Dextopは、Android端末上に仮想ディスプレイを作成し、スマートフォンだけでデスクトップ風の作業環境を利用するためのオープンソースアプリです。ShizukuとAndroidのシステム機能を利用して、アプリの起動、ウィンドウ配置、タッチ操作、画面方向などを制御します。
 
+## スクリーンショットとデモ
+
+<table>
+  <tr>
+    <td width="20%" align="center"><img src="docs/media/home.jpg" alt="Dextopホーム画面"><br><sub>ホームとワークスペース</sub></td>
+    <td width="20%" align="center"><img src="docs/media/desktop.jpg" alt="Dextopデスクトップ"><br><sub>デスクトップ</sub></td>
+    <td width="20%" align="center"><img src="docs/media/control-overlay.jpg" alt="Dextop操作オーバーレイ"><br><sub>操作オーバーレイ</sub></td>
+    <td width="20%" align="center"><img src="docs/media/multi-window.jpg" alt="Dextopマルチウィンドウ"><br><sub>マルチウィンドウ</sub></td>
+    <td width="20%" align="center"><a href="docs/media/dextop-demo.mp4"><img src="docs/media/demo-poster.jpg" alt="Dextopデモ動画を再生"></a><br><sub>▶ デモ動画</sub></td>
+  </tr>
+</table>
+
 ## 機能
 
 - [x] 解像度、DPI、縦向き／横向きを指定した仮想ディスプレイ
